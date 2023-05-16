@@ -36,8 +36,8 @@ RSpec.describe "Markets API", type: :request do
       expect(market[:attributes]).to have_key(:lon)
       expect(market[:attributes][:lon]).to be_a(String)
 
-      expect(market[:attributes]).to have_key(:num_vendors)
-      expect(market[:attributes][:num_vendors]).to be_a(Integer)
+      expect(market[:attributes]).to have_key(:vendor_count)
+      expect(market[:attributes][:vendor_count]).to be_a(Integer)
     end
   end
 
@@ -76,8 +76,8 @@ RSpec.describe "Markets API", type: :request do
     expect(given_market).to have_key(:lon)
     expect(given_market[:lon]).to be_a(String)
 
-    expect(given_market).to have_key(:num_vendors)
-    expect(given_market[:num_vendors]).to be_a(Integer)
+    expect(given_market).to have_key(:vendor_count)
+    expect(given_market[:vendor_count]).to be_a(Integer)
   end
 
   it 'returns an error if a market does not exist' do

@@ -2,18 +2,18 @@ require 'rails_helper'
 
 RSpec.describe 'Vendors API', type: :request do
   it 'sends a list of vendors for a given market' do
-    @market1 = FactoryBot.create(:market)
-    @market2 = FactoryBot.create(:market)
+    market1 = FactoryBot.create(:market)
+    market2 = FactoryBot.create(:market)
 
-    @vendor1 = FactoryBot.create(:vendor, credit_accepted: true)
-    @vendor2 = FactoryBot.create(:vendor, credit_accepted: true)
-    @vendor3 = FactoryBot.create(:vendor, credit_accepted: true)
+    vendor1 = FactoryBot.create(:vendor, credit_accepted: true)
+    vendor2 = FactoryBot.create(:vendor, credit_accepted: true)
+    vendor3 = FactoryBot.create(:vendor, credit_accepted: true)
 
-    MarketVendor.create(market_id: @market1.id, vendor_id: @vendor1.id)
-    MarketVendor.create(market_id: @market1.id, vendor_id: @vendor2.id)
-    MarketVendor.create(market_id: @market2.id, vendor_id: @vendor3.id)
+    MarketVendor.create(market_id: market1.id, vendor_id: vendor1.id)
+    MarketVendor.create(market_id: market1.id, vendor_id: vendor2.id)
+    MarketVendor.create(market_id: market2.id, vendor_id: vendor3.id)
 
-    get "/api/v0/markets/#{@market1.id}/vendors"
+    get "/api/v0/markets/#{market1.id}/vendors"
 
     expect(response).to be_successful
 
@@ -54,10 +54,10 @@ RSpec.describe 'Vendors API', type: :request do
   end
 
   it 'can return a vendor when given a vendor id' do
-    @vendor1 = FactoryBot.create(:vendor, credit_accepted: true)
-    @vendor2 = FactoryBot.create(:vendor, credit_accepted: true)
+    vendor1 = FactoryBot.create(:vendor, credit_accepted: true)
+    vendor2 = FactoryBot.create(:vendor, credit_accepted: true)
 
-    get "/api/v0/vendors/#{@vendor1[:id]}"
+    get "/api/v0/vendors/#{vendor1[:id]}"
 
     given_vendor = JSON.parse(response.body, symbolize_names: true)
     
@@ -152,6 +152,104 @@ RSpec.describe 'Vendors API', type: :request do
     reply = JSON.parse(response.body, symbolize_names: true)
 
     expect(reply).to have_key(:errors)
-    expect(reply[:errors][0][:detail]).to eq("Validation failed: Contact name can't be blank, Contact phone can't be blank, and Credit accepted can't be blank")
+    expect(reply[:errors][0][:detail]).to eq("Validation failed: Contact name can't be blank, Contact phone can't be blank, and Credit accepted is not included in the list")
+  end
+
+  it 'can update a vendor' do
+    vendor1 = FactoryBot.create(:vendor, credit_accepted: true)
+
+    vendor_data = {
+      name: "Gimli's Axes",
+      description: 'Aye. I could do that',
+      contact_name: 'Gimli',
+      contact_phone: '123-456-7890',
+      credit_accepted: true
+    }
+
+    patch "/api/v0/vendors/#{vendor1[:id]}", params: { vendor: vendor_data }
+    
+    expect(response).to be_successful
+    expect(response.status).to eq(200)
+
+    updated_vendor = JSON.parse(response.body, symbolize_names: true)
+
+    expect(updated_vendor).to have_key(:data)
+    expect(updated_vendor[:data]).to be_a(Hash)
+
+    expect(updated_vendor[:data]).to have_key(:id)
+    expect(updated_vendor[:data][:id]).to be_a(String)
+
+    expect(updated_vendor[:data]).to have_key(:type)
+    expect(updated_vendor[:data][:type]).to eq('vendor')
+
+    expect(updated_vendor[:data]).to have_key(:attributes)
+    expect(updated_vendor[:data][:attributes]).to be_a(Hash)
+  end
+
+  it 'returns a 400 if vendor is not updated with details' do
+    vendor1 = FactoryBot.create(:vendor, credit_accepted: true)
+
+    vendor_data = {
+      name: '',
+      description: '',
+      contact_name: 'Gimli',
+      contact_phone: '123-456-7890',
+      credit_accepted: true
+    }
+    patch "/api/v0/vendors/#{vendor1[:id]}", params: { vendor: vendor_data }
+
+    expect(response).to_not be_successful
+    expect(response.status).to eq(400)
+
+    reply = JSON.parse(response.body, symbolize_names: true)
+
+    expect(reply).to have_key(:errors)
+    expect(reply[:errors][0][:detail]).to eq("Validation failed: Name can't be blank and Description can't be blank")
+  end
+
+  it 'returns a 404 if vendor does not exist' do
+    vendor_data = {
+      name: "Gimli's Axes",
+      description: 'Aye. I could do that',
+      contact_name: 'Gimli',
+      contact_phone: '123-456-7890',
+      credit_accepted: true
+    }
+
+    patch "/api/v0/vendors/1", params: { vendor: vendor_data }
+
+    expect(response).to_not be_successful
+    expect(response.status).to eq(404)
+
+    reply = JSON.parse(response.body, symbolize_names: true)
+
+    expect(reply).to have_key(:errors)
+    expect(reply[:errors][0][:detail]).to eq("Couldn't find Vendor with 'id'=1")
+
+
+  end
+
+
+  it 'can delete a vendor' do
+    @vendor1 = FactoryBot.create(:vendor, credit_accepted: false)
+
+    delete "/api/v0/vendors/#{@vendor1[:id]}"
+
+    expect(response).to be_successful
+    expect(response.status).to eq(204)
+
+    expect(Vendor.count).to eq(0)
+  end
+
+  it 'returns a 404 if vendor does not exist when deleting' do
+    delete "/api/v0/vendors/1"
+
+    expect(response).to_not be_successful
+    expect(response.status).to eq(404)
+
+    reply = JSON.parse(response.body, symbolize_names: true)
+
+    expect(reply).to have_key(:errors)
+    expect(reply[:errors][0][:detail]).to eq("Couldn't find Vendor with 'id'=1")
   end
 end

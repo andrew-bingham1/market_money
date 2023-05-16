@@ -1,7 +1,7 @@
 class Vendor < ApplicationRecord
-  validates_presence_of :name
-  validates_presence_of :description
-  validates_presence_of :contact_name
-  validates_presence_of :contact_phone
-  validates_presence_of :credit_accepted
+  validates :name, presence: true
+  validates :description, presence: true
+  validates :contact_name, presence: true
+  validates :contact_phone, presence: true
+  validates :credit_accepted, inclusion: [true, false]
 end

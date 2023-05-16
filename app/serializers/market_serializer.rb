@@ -11,7 +11,7 @@ class MarketSerializer
 
   has_many :vendors
 
-  attribute :num_vendors do |object|
+  attribute :vendor_count do |object|
     object.vendors.count
   end
 end

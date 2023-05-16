@@ -17,8 +17,25 @@ class Api::V0::VendorsController < ApplicationController
     if new_vendor.save
       render json: VendorSerializer.new(Vendor.last), status: :created
     else
-      render json: { errors: [{ detail: "Validation failed: #{new_vendor.errors.full_messages.to_sentence}"}]}, status: :bad_request
+      render json: { errors: [{ detail: "Validation failed: #{new_vendor.errors.full_messages.to_sentence}" }] }, status: :bad_request
     end
+  end
+
+  def update
+    vendor = Vendor.find(params[:id])
+    if vendor.update(vendor_params)
+      render json: VendorSerializer.new(vendor), status: :ok
+    else
+      render json: { errors: [{ detail: "Validation failed: #{vendor.errors.full_messages.to_sentence}" }] }, status: :bad_request
+    end
+    rescue ActiveRecord::RecordNotFound
+      record_not_found_show
+  end
+
+  def destroy
+    Vendor.find(params[:id]).destroy
+    rescue ActiveRecord::RecordNotFound
+      record_not_found_show
   end
 
 
