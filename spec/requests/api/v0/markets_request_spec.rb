@@ -47,6 +47,8 @@ RSpec.describe "Markets API", type: :request do
     get "/api/v0/markets/#{@market[:id]}"
 
     given_market = JSON.parse(response.body, symbolize_names: true)
+    
+    given_market = given_market[:data][:attributes]
 
     expect(response).to be_successful
 
@@ -73,6 +75,9 @@ RSpec.describe "Markets API", type: :request do
     
     expect(given_market).to have_key(:lon)
     expect(given_market[:lon]).to be_a(String)
+
+    expect(given_market).to have_key(:num_vendors)
+    expect(given_market[:num_vendors]).to be_a(Integer)
   end
 
   it 'returns an error if a market does not exist' do

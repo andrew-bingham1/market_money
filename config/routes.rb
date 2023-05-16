@@ -8,6 +8,7 @@ Rails.application.routes.draw do
       resources :markets do
         resources :vendors, only: [:index]
       end
+      resources :vendors, only: [:show]
     end
   end
 end
