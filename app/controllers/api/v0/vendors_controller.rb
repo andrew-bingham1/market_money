@@ -12,6 +12,15 @@ class Api::V0::VendorsController < ApplicationController
       record_not_found_show
   end
 
+  def create
+    new_vendor = Vendor.new(vendor_params)
+    if new_vendor.save
+      render json: VendorSerializer.new(Vendor.last), status: :created
+    else
+      render json: { errors: [{ detail: "Validation failed: #{new_vendor.errors.full_messages.to_sentence}"}]}, status: :bad_request
+    end
+  end
+
 
   private
 
@@ -21,5 +30,15 @@ class Api::V0::VendorsController < ApplicationController
 
   def record_not_found_show
     render json: { errors: [{ detail: "Couldn't find Vendor with 'id'=#{params[:id]}" }] }, status: :not_found
+  end
+
+  def vendor_params
+    params.require(:vendor).permit(
+      :name,
+      :description,
+      :contact_name,
+      :contact_phone,
+      :credit_accepted
+    )
   end
 end

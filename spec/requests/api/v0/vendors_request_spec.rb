@@ -88,9 +88,70 @@ RSpec.describe 'Vendors API', type: :request do
 
     expect(response.status).to eq(404)
 
-    reply =JSON.parse(response.body, symbolize_names: true)
+    reply = JSON.parse(response.body, symbolize_names: true)
     
     expect(reply).to have_key(:errors)
     expect(reply[:errors][0][:detail]).to eq("Couldn't find Vendor with 'id'=1")
+  end
+
+  it 'can create a new vendor' do
+    vendor_data = {
+      name: 'Lembas by Legolas',
+      description: 'One bite is enough to fill the stomach of a grown man',
+      contact_name: 'Legolas',
+      contact_phone: '123-456-7890',
+      credit_accepted: true
+    }
+
+    post '/api/v0/vendors', params: { vendor: vendor_data }
+
+    expect(response).to be_successful
+    expect(response.status).to eq(201)
+
+    new_vendor = JSON.parse(response.body, symbolize_names: true)
+
+    expect(new_vendor).to have_key(:data)
+    expect(new_vendor[:data]).to be_a(Hash)
+
+    expect(new_vendor[:data]).to have_key(:id)
+    expect(new_vendor[:data][:id]).to be_a(String)
+
+    expect(new_vendor[:data]).to have_key(:type)
+    expect(new_vendor[:data][:type]).to eq('vendor')
+    
+    expect(new_vendor[:data]).to have_key(:attributes)
+    expect(new_vendor[:data][:attributes]).to be_a(Hash)
+
+    expect(new_vendor[:data][:attributes]).to have_key(:name)
+    expect(new_vendor[:data][:attributes][:name]).to eq(vendor_data[:name])
+
+    expect(new_vendor[:data][:attributes]).to have_key(:description)
+    expect(new_vendor[:data][:attributes][:description]).to eq(vendor_data[:description])
+
+    expect(new_vendor[:data][:attributes]).to have_key(:contact_name)
+    expect(new_vendor[:data][:attributes][:contact_name]).to eq(vendor_data[:contact_name])
+
+    expect(new_vendor[:data][:attributes]).to have_key(:contact_phone) 
+    expect(new_vendor[:data][:attributes][:contact_phone]).to eq(vendor_data[:contact_phone])
+
+    expect(new_vendor[:data][:attributes]).to have_key(:credit_accepted)
+    expect(new_vendor[:data][:attributes][:credit_accepted]).to eq(vendor_data[:credit_accepted])
+  end
+
+  it 'returns a 400 if vendor is not created with details' do
+    vendor_data = {
+      name: "Gimli's Axes",
+      description: 'Aye. I could do that'
+    }
+
+    post '/api/v0/vendors', params: { vendor: vendor_data }
+
+    expect(response).to_not be_successful
+    expect(response.status).to eq(400)
+
+    reply = JSON.parse(response.body, symbolize_names: true)
+
+    expect(reply).to have_key(:errors)
+    expect(reply[:errors][0][:detail]).to eq("Validation failed: Contact name can't be blank, Contact phone can't be blank, and Credit accepted can't be blank")
   end
 end
