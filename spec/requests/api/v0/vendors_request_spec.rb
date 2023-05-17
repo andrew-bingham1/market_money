@@ -47,7 +47,7 @@ RSpec.describe 'Vendors API', type: :request do
 
     expect(response.status).to eq(404)
 
-    reply =JSON.parse(response.body, symbolize_names: true)
+    reply = JSON.parse(response.body, symbolize_names: true)
 
     expect(reply).to have_key(:errors)
     expect(reply[:errors][0][:detail]).to eq("Couldn't find Market with 'id'=3")
