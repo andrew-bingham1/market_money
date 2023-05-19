@@ -47,7 +47,7 @@ RSpec.describe 'Market Vendors API', type: :request do
 
     post '/api/v0/market_vendors', params: { market_vendor: market_vendor_params }
 
-    # expect(response).to_not be_successful
+    expect(response).to_not be_successful
     expect(response.status).to eq(422)
 
     reply = JSON.parse(response.body, symbolize_names: true)
@@ -56,4 +56,33 @@ RSpec.describe 'Market Vendors API', type: :request do
     expect(reply[:errors][0][:detail]).to eq("Validation failed: Market vendor association between market with market_id=#{market.id} and vendor_id=#{vendor.id} already exists")
   end
 
+  it 'can delete a market vendor entry' do
+    market = FactoryBot.create(:market)
+    vendor = FactoryBot.create(:vendor, credit_accepted: true)
+    market_vendor = MarketVendor.create(market_id: market.id, vendor_id: vendor.id)
+
+    body = { market_id: market.id, vendor_id: vendor.id }
+
+    delete '/api/v0/market_vendors', params: { market_vendor: body }
+
+    expect(response).to be_successful
+    expect(response.status).to eq(204)
+  end
+
+  it 'returns a 404 if market vendor does not exist' do
+    market = FactoryBot.create(:market)
+    vendor = FactoryBot.create(:vendor, credit_accepted: true)
+
+    body = { market_id: market.id, vendor_id: vendor.id }
+
+    delete '/api/v0/market_vendors', params: { market_vendor: body }
+
+    expect(response).to_not be_successful
+    expect(response.status).to eq(404)
+
+    reply = JSON.parse(response.body, symbolize_names: true)
+
+    expect(reply).to have_key(:errors)
+    expect(reply[:errors][0][:detail]).to eq("No MarketVendor with market_id=#{market.id} and vendor_id=#{vendor.id} exists")
+  end
 end

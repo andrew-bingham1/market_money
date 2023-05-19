@@ -225,8 +225,6 @@ RSpec.describe 'Vendors API', type: :request do
 
     expect(reply).to have_key(:errors)
     expect(reply[:errors][0][:detail]).to eq("Couldn't find Vendor with 'id'=1")
-
-
   end
 
 
