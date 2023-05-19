@@ -30,8 +30,7 @@ class Api::V0::MarketsController < ApplicationController
     else
       facade = AtmFacade.new(market)
       atms = facade.atms
-      render json: AtmSerializer.new(atms)
-    
+      render json: AtmSerializer.new(atms), status: :ok
   end
 
   private

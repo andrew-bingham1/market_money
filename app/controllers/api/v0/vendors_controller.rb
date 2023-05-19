@@ -1,13 +1,13 @@
 class Api::V0::VendorsController < ApplicationController
 
   def index
-    render json: VendorSerializer.new(Market.find(params[:market_id]).vendors) 
+    render json: VendorSerializer.new(Market.find(params[:market_id]).vendors), status: :ok
     rescue ActiveRecord::RecordNotFound
       record_not_found_index
   end
 
   def show
-    render json: VendorSerializer.new(Vendor.find(params[:id]))
+    render json: VendorSerializer.new(Vendor.find(params[:id])), status: :ok
     rescue ActiveRecord::RecordNotFound
       record_not_found_show
   end
@@ -33,7 +33,7 @@ class Api::V0::VendorsController < ApplicationController
   end
 
   def destroy
-    Vendor.find(params[:id]).destroy
+    Vendor.find(params[:id]).destroy 
     rescue ActiveRecord::RecordNotFound
       record_not_found_show
   end
